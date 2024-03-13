@@ -1,103 +1,39 @@
 import React,{useState,useEffect} from "react";
-import axios from "axios";
-import EditPatient from "./EditPatient";
-function Home(){
-    const [patients,setPatients]=useState([]);
+import axios from "axios"; // HTTP Requests (CRUD)
+function Doctor(){
     const [doctors,setDoctors]=useState([]);
-    const [selectedDoctorId,setSelectedDoctorId]=useState(null);
-    const [editPatientId,setEditPatientId]=useState(null);
-
+    // mount phase in functional component useEffect after component 
+    // rendering the details are rendered.
     useEffect(()=>{
-        const fetchPatientsAndDoctors=async ()=>{
+        const fetchDoctors=async()=>{
             try{
-                const patientsResponse=await axios.get('https://backendhospital-ji3g.onrender.com/patients');
-                const doctorsResponse=await axios.get('https://backendhospital-ji3g.onrender.com/doctors');
-                setPatients(patientsResponse.data);
-                setDoctors(doctorsResponse.data);
+                // bringing the doctors details : name,age,specialization,gender,salary..
+                const response=await axios.get('https://doctorbackend-z1sm.onrender.com/doctors');
+                // initially in doctors no details
+                setDoctors(response.data);
+                // the doctors details are bought in page(updated)..get / retrieve information..
             }
             catch(error){
-                console.log('error in fetching info',error);
+                console.log('Error in fetching the doctors : '+error);
             }
         }
-        fetchPatientsAndDoctors();
-    },[]);
-
-    const handleDoctorChange=(event)=>{
-        const selectedDoctorId=parseInt(event.target.value);
-        setSelectedDoctorId(selectedDoctorId);
-    };
-    // filter patients in table
-    const filteredPatients=setSelectedDoctorId ? patients.filter(patient=>patient.doctor.id===selectedDoctorId) : patients;
-    // editing
-    const handleEdit=(patientId)=>{
-        setEditPatientId(patientId);
-    }
-    // close edit
-    const handleCloseEdit=()=>{
-        setEditPatientId(null);
-    }
-    // update
-    const handleUpdate=()=>{
-        setEditPatientId(null);
-    }
-    // delete
-    const handleDelete=async (patientId)=>{
-        try{
-            await axios.delete(`https://backendhospital-ji3g.onrender.com/patients/${patientId}`);
-            setPatients((prevPatients)=>prevPatients.filter((patient)=>patient.id !== patientId));
-        }
-        catch(error){
-            console.log('error in deleting patient ',error);
-        }
-    }
+        fetchDoctors(); // calling the function..
+    },[]); // mount based on dependency
     return(
         <div>
-            <h2>Patients</h2>
-            <label>Select Doctor : </label>
-            {/* creating a dropdown to show the or seledt the assigned doctors from doctor api */}
-            <select onChange={handleDoctorChange}>
-                <option value={null}>All Doctors</option>
-                {doctors.map((doctor)=>(
-                    <option key={doctor.id} value={doctor.id}>{doctor.name}-{doctor.specialization}</option>
-                ))}
-            </select>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Weight</th>
-                        <th>Gender</th>
-                        <th>Age</th>
-                        <th>Disease</th>
-                        <th>Doctor</th>
-                        <th>Edit</th>
-                        <th>Delete</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {
-                        filteredPatients.map((patient)=>{
-                            <tr key={patient.id}>
-                                <td>{patient.name}</td>
-                                <td>{patient.weight}</td>
-                                <td>{patient.age}</td>
-                                <td>{patient.disease}</td>
-                                <td>{patient.doctor.name}-{patient.doctor.specialization}</td>
-                                <td><button onClick={()=>handleEdit(patient.id)}>Edit</button></td>
-                                <td><button onClick={()=>handleDelete(patient.id)}>Delete</button></td>
-                            </tr>
-                        })
-                    }
-                </tbody>
-            </table>
-            {
-                editPatientId !== null && (
-                    <EditPatient patientId={editPatientId}
-                    onClose={handleCloseEdit} onUpdate={handleUpdate}></EditPatient>
-                )
-            }
+            <center>
+                <h2>Doctors</h2>
+                {
+                    doctors.map(doctor=>(
+                        <div key={doctor.id}>
+                            <p><strong>{doctor.name}</strong>-{doctor.specialization}</p>
+                            <p>Doctor id : {doctor.id}</p>
+                        </div>
+                    ))
+                }
+            </center>
         </div>
     )
 }
 
-export default Home;
+export default Doctor;
